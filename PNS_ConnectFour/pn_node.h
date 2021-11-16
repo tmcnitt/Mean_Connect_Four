@@ -1,11 +1,13 @@
 #pragma once
+
 #include <vector>
 #include "bit_board.h"
 #include <memory>
+#include <iostream>
 
-enum class pn_value { TRUE , FALSE, UNKNOWN };
+extern int pn_nodes_in_exsistence;
 
-
+enum class pn_value { TRUE, FALSE, UNKNOWN };
 enum class pn_type { OR, AND };
 
 class pn_node  {
@@ -22,21 +24,21 @@ class pn_node  {
 
         pn_node * m_parent;
         
-        std::vector<pn_node*> m_children;
+        pn_node *  m_children;
+        uint32_t m_children_count = 0;
+
+        pn_node();
+        ~pn_node();
 
         pn_node * select_most_proving();
 
         void generate_all_children();
         void evaluate();
         
-        void update_ancestors();
+        pn_node * update_ancestors(pn_node *);
         
         void set_proof_and_disproof_numbers();
         void develop();
 
-        //~pn_node(){
-        //    for(int i = 0; i < this->m_children.size(); i++){
-        //        delete this->m_children[i];
-        //    }
-        //}
+       
 };

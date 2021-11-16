@@ -2,21 +2,24 @@
 #include "pn_node.h"
 #include <iostream>
 
+
 void solve(pn_node root) {
   root.evaluate();
   root.set_proof_and_disproof_numbers();
 
   int i = 0;
 
+  pn_node * current = &root;
   while (root.m_proof != 0 && root.m_disproof != 0) {
-    pn_node *most_proving_node = root.select_most_proving();
+
+    pn_node * most_proving_node = current->select_most_proving();
 
     most_proving_node->develop();
 
-    most_proving_node->update_ancestors();
 
-    if (i % 1000000 == 0) {
-      std::cout << "Iteration: " << i << " Root proof: " << root.m_proof << " Root disproof: " << root.m_disproof << std::endl;
+    if(true){
+    //if (i % 1000000 == 0) {
+      std::cout << "Iteration: " << i << " Root proof: " << root.m_proof << " Root disproof: " << root.m_disproof << " Nodes out there: " << pn_nodes_in_exsistence << std::endl;
       most_proving_node->m_board.print();
       std::cout << "Has player 0 won ?: " << most_proving_node->m_board.haswon(0) << " - Player 1?: " << most_proving_node->m_board.haswon(1) << std::endl;
 
@@ -44,14 +47,21 @@ void solve(pn_node root) {
           std::cout << " - Proven UNKNOWN";
         }
 
-        std::cout << " - Num children: " << check->m_children.size();
+        std::cout << " - Num children: " << check->m_children_count;
         std::cout << std::endl;
 
         check = check->m_parent;
       }
     }
 
+    current = most_proving_node->update_ancestors(&root);
+
+
     i += 1;
+
+    if(most_proving_node->m_id > 1){
+      break;
+    }
 
     // if(i % 1 == 0){
     /*  std::cout << "Selected node: " << most_proving_node->m_id << std::endl;
@@ -89,9 +99,15 @@ void solve(pn_node root) {
     std::cout << "Root proved unknown" << std::endl;
     root.m_pn_value = pn_value::UNKNOWN;
   }
+
+  std::cout << "Final nodes: " << pn_nodes_in_exsistence << std::endl;
 }
 
+
 int main() {
+  //pointer_test();
+  //return 0;
+
   bit_board board;
   //board.makemove(0, 3);
   //board.makemove(0, 3);
@@ -116,7 +132,7 @@ int main() {
   root.m_id = 0;
   root.m_parent = nullptr;
   root.m_board = board;
-  root.m_pn_type = pn_type::AND;
+  root.m_pn_type = pn_type::OR;
 
   solve(root);
 }

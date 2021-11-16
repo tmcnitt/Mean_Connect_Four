@@ -5,23 +5,39 @@
 #include <iostream>
 #include <cassert>
 
+int pn_nodes_in_exsistence = 0;
+
+pn_node::pn_node(){
+    pn_nodes_in_exsistence += 1;
+}
+
+pn_node::~pn_node(){
+    pn_nodes_in_exsistence -= 1;
+
+    if(this->m_children_count > 0){
+        delete [] this->m_children;
+    }
+}
+
 pn_node * pn_node::select_most_proving() {
     pn_node * node = this;
 
-    while (!node->m_children.empty()) {
+    while (node->m_children_count > 0) {
         int i = 0;
 
         if (node->m_pn_type == pn_type::OR) {
-            while (node->m_children[i]->m_proof != node->m_proof) {
+            while (node->m_children[i].m_proof != node->m_proof) {
                 i += 1;
             }
         } else {
-            while (node->m_children[i]->m_disproof != node->m_disproof) {
+            while (node->m_children[i].m_disproof != node->m_disproof) {
                 i += 1;
             }
         }
 
-        node = node->m_children[i];
+        //assert(i < node->m_children.size());
+
+        node = &node->m_children[i];
     }
 
     return node;
@@ -43,65 +59,84 @@ void pn_node::evaluate(){
 
 void pn_node::generate_all_children(){
     int player = 1;
-    pn_type type = pn_type::AND;
+    pn_type type = pn_type::OR;
 
     if(this->m_pn_type == type){
-        type = pn_type::OR;
+        type = pn_type::AND;
         player = 0;
     }
 
     if(this->m_pn_value != pn_value::UNKNOWN){
         return;
     }
+
     assert(this->m_pn_value == pn_value::UNKNOWN);
+
+    this->m_children = new pn_node[WIDTH];
 
     for(int col = 0; col < WIDTH; col++){
         if(this->m_board.isplayable(col)){
             bit_board child_board(this->m_board);
             child_board.makemove(player, col);
 
+            pn_node child = pn_node();
+            child.m_id = this->m_id + 1;
+            child.m_parent = this;
+            child.m_board = child_board;
+            child.m_pn_type = type;
+            child.m_pn_value = pn_value::UNKNOWN;
+            child.m_proof = 1;
+            child.m_disproof = 1;
 
-            pn_node * child = new pn_node();
-            child->m_id = this->m_id + 1;
-            child->m_parent = this;
-            child->m_board = child_board;
-            child->m_pn_type = type;
 
-            //std::cout << "Adding node with ids: " << child->m_id << std::endl;
-
-            this->m_children.push_back(child);
+            this->m_children[this->m_children_count] = child;
+            this->m_children_count += 1;
         }
     }
 
 }
 
-void pn_node::update_ancestors(){
+pn_node * pn_node::update_ancestors(pn_node * root){
     pn_node * node = this;
 
-    while(node != nullptr){
+    while(node != root){
+        uint32_t old_proof = node->m_proof;
+        uint32_t old_disproof = node->m_disproof;
+
         node->set_proof_and_disproof_numbers();
+
+        if(node->m_proof == old_proof && node->m_disproof == old_disproof){
+            return node;
+        }
+
         node = node->m_parent;
     }
+
+    root->set_proof_and_disproof_numbers();
+    return root;
 }
 
 void pn_node::develop()
 {
+    assert(this->m_children_count == 0);
+
     this->generate_all_children();
-    for(pn_node * child: this->m_children){
-        child->evaluate();
-        child->set_proof_and_disproof_numbers();
+
+    for(int i = 0; i < this->m_children_count; i++){
+        this->m_children[i].evaluate();
+        this->m_children[i].set_proof_and_disproof_numbers();
     }
 }
 
 uint32_t sum_proof(pn_node * parent){
     uint32_t sum = 0;
 
-    for(pn_node * child : parent->m_children){
-        if(child->m_proof == UINT32_MAX){
+    for(int i = 0; i < parent->m_children_count; i++){
+        if(parent->m_children[i].m_proof == UINT32_MAX){
             return UINT32_MAX;
         }
 
-        sum += child->m_proof;
+        sum += parent->m_children[i].m_proof;
     }
 
     return sum;
@@ -110,13 +145,14 @@ uint32_t sum_proof(pn_node * parent){
 uint32_t sum_disproof(pn_node * parent){
     uint32_t sum = 0;
 
-    for(pn_node * child : parent->m_children){
-        if(child->m_disproof == UINT32_MAX){
+    for(int i = 0; i < parent->m_children_count; i++){
+        if(parent->m_children[i].m_disproof == UINT32_MAX){
             return UINT32_MAX;
         }
-        
-        sum += child->m_disproof;
+
+        sum += parent->m_children[i].m_disproof;
     }
+
 
     return sum;
 }
@@ -124,9 +160,9 @@ uint32_t sum_disproof(pn_node * parent){
 uint32_t min_proof(pn_node * parent){
     uint32_t min = UINT32_MAX;
 
-    for(pn_node * child : parent->m_children){
-        if(min > child->m_proof){
-            min = child->m_proof;
+    for(int i = 0; i < parent->m_children_count; i++){
+        if(min > parent->m_children[i].m_proof){
+            min = parent->m_children[i].m_proof;
         }
     }
 
@@ -136,9 +172,9 @@ uint32_t min_proof(pn_node * parent){
 uint32_t min_disproof(pn_node * parent){
     uint32_t min = UINT32_MAX;
 
-    for(pn_node * child : parent->m_children){
-        if(min > child->m_disproof){
-            min = child->m_disproof;
+    for(int i = 0; i < parent->m_children_count; i++){
+        if(min > parent->m_children[i].m_disproof){
+            min = parent->m_children[i].m_disproof;
         }
     }
 
@@ -150,16 +186,7 @@ uint32_t min_disproof(pn_node * parent){
 
 
 void pn_node::set_proof_and_disproof_numbers(){
-    //std::cout << "Updating proof and disproof numbers for " << this->m_id << std::endl;
-    //std::cout << "\t is expanded: " << this->m_expanded << std::endl;
-    //std::cout << "\t num children: " << this->m_children.size() << std::endl;
-
-    //if (this->m_pn_type == pn_type::AND){
-    //    std::cout << "\t pn_type:  AND"  << std::endl;
-    //} else {
-    //    std::cout << "\t pn_type:  OR"  << std::endl;
-    //}
-    if(!this->m_children.empty()){
+    if(this->m_children_count > 0){
         if(this->m_pn_type == pn_type::AND){
             this->m_proof = sum_proof(this);
             this->m_disproof = min_disproof(this);
@@ -167,25 +194,6 @@ void pn_node::set_proof_and_disproof_numbers(){
             this->m_proof = min_proof(this);
             this->m_disproof = sum_disproof(this);
         }
-
-        if(this->m_proof == UINT32_MAX && this->m_disproof == 0){
-            this->m_pn_value = pn_value::FALSE;
-
-            for(int i = 0; i < this->m_children.size(); i++){
-                delete this->m_children[i];
-            }
-            this->m_children.clear();
-        }
-
-         if(this->m_proof == 0 && this->m_disproof == UINT32_MAX){
-            this->m_pn_value = pn_value::TRUE;
-
-            for(int i = 0; i < this->m_children.size(); i++){
-                delete this->m_children[i];
-            }
-            this->m_children.clear();
-        }
-
     } else {
         if(this->m_pn_value == pn_value::FALSE){
             this->m_proof = UINT32_MAX;
@@ -196,8 +204,23 @@ void pn_node::set_proof_and_disproof_numbers(){
         } else if(this->m_pn_value == pn_value::UNKNOWN){
             this->m_proof = 1;
             this->m_disproof = 1;
+        } else {
+            assert(false);
         }
     } 
+
+    if(this->m_proof == 0 || this->m_disproof == 0){
+        if(this->m_children_count > 0){
+            delete [] this->m_children;
+            this->m_children_count = 0;
+        }
+
+
+        //for(int i = 0; i < this->m_children.size(); i++){
+        //    delete this->m_children[i];
+        //}
+        //this->m_children.clear();
+    }
 
     //std::cout << "\t Updated proof: " << this->m_proof << " disproof: " << this->m_disproof << std::endl;
 }
