@@ -29,7 +29,6 @@
 #define TOP (BOTTOM << HEIGHT)
 #define FULL (BOTTOM << (HEIGHT-1))
 
-
 class bit_board {
     public:
         bit_board(){
@@ -37,14 +36,19 @@ class bit_board {
                 this->m_heights[i] = (char)(H1*i);
             }
         }
+
         char m_heights[WIDTH];
+        char m_moves[HEIGHT*WIDTH];
+
+        char m_move_num = 0;
 
         uint64_t m_boards[2] = {0,0};
 
-        void makemove(int player, int col);
+        void makemove(int col);
+        void undomove();
 
         void print();
         bool isfull();
-        uint64_t haswon(int player);
+        bool haswon(int player);
         bool isplayable(int col);
 };

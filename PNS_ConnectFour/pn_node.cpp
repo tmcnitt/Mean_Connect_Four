@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cassert>
 
+bit_board board;
 int pn_nodes_in_exsistence = 0;
 
 pn_node::pn_node(){
@@ -14,7 +15,7 @@ pn_node::pn_node(){
 pn_node::~pn_node(){
     pn_nodes_in_exsistence -= 1;
 
-    if(this->m_children_count > 0){
+    if(this->m_created_children){
         delete [] this->m_children;
     }
 }
@@ -22,7 +23,7 @@ pn_node::~pn_node(){
 pn_node * pn_node::select_most_proving() {
     pn_node * node = this;
 
-    while (node->m_children_count > 0) {
+    while (node->m_expanded) {
         int i = 0;
 
         if (node->m_pn_type == pn_type::OR) {
@@ -38,7 +39,13 @@ pn_node * pn_node::select_most_proving() {
         //assert(i < node->m_children.size());
 
         node = &node->m_children[i];
+        board.makemove(node->m_move);
     }
+
+    assert(node->m_children_count == 0);
+    assert(node->m_proof == 1);
+    assert(node->m_disproof == 1);
+
 
     return node;
 }
@@ -46,24 +53,22 @@ pn_node * pn_node::select_most_proving() {
 void pn_node::evaluate(){
     this->m_pn_value = pn_value::UNKNOWN;
 
-    if(this->m_board.haswon(0)){
+    if(board.haswon(0)){
        //std::cout << "Found a way player 1 wins" << std::endl;
         this->m_pn_value = pn_value::TRUE;
-    } else if(this->m_board.haswon(1)){
+    } else if(board.haswon(1)){
         //std::cout << "Found a way player 1 wins" << std::endl;
         this->m_pn_value = pn_value::FALSE;
-    } else if(this->m_board.isfull()) {
+    } else if(board.isfull()) {
         this->m_pn_value = pn_value::FALSE;
     }
 }
 
 void pn_node::generate_all_children(){
-    int player = 1;
     pn_type type = pn_type::OR;
 
     if(this->m_pn_type == type){
         type = pn_type::AND;
-        player = 0;
     }
 
     if(this->m_pn_value != pn_value::UNKNOWN){
@@ -73,16 +78,15 @@ void pn_node::generate_all_children(){
     assert(this->m_pn_value == pn_value::UNKNOWN);
 
     this->m_children = new pn_node[WIDTH];
+    this->m_created_children = true;
 
     for(int col = 0; col < WIDTH; col++){
-        if(this->m_board.isplayable(col)){
-            bit_board child_board(this->m_board);
-            child_board.makemove(player, col);
+        if(board.isplayable(col)){
 
             pn_node child = pn_node();
             child.m_id = this->m_id + 1;
             child.m_parent = this;
-            child.m_board = child_board;
+            child.m_move = col;
             child.m_pn_type = type;
             child.m_pn_value = pn_value::UNKNOWN;
             child.m_proof = 1;
@@ -110,6 +114,7 @@ pn_node * pn_node::update_ancestors(pn_node * root){
         }
 
         node = node->m_parent;
+        board.undomove();
     }
 
     root->set_proof_and_disproof_numbers();
@@ -123,9 +128,52 @@ void pn_node::develop()
     this->generate_all_children();
 
     for(int i = 0; i < this->m_children_count; i++){
-        this->m_children[i].evaluate();
-        this->m_children[i].set_proof_and_disproof_numbers();
+        pn_node & child = this->m_children[i];
+        child.evaluate();
+        child.set_proof_and_disproof_numbers();
+
+        //if(this->m_children[i].pn_type == pn_type::AND){
+
+        //}
     }
+
+    this->m_expanded = true;
+}
+
+//Unsolved node - has finite prood and disproof numbers not equal to zero
+//Solving a node either solves or doesnt update its parent
+
+
+void pn_node::set_proof_and_disproof_numbers(){
+    if(this->m_expanded){
+        if(this->m_pn_type == pn_type::AND){
+            this->m_proof = sum_proof(this);
+            this->m_disproof = min_disproof(this);
+        } else {
+            this->m_proof = min_proof(this);
+            this->m_disproof = sum_disproof(this);
+        }
+    } else {
+        if(this->m_pn_value == pn_value::FALSE){
+            this->m_proof = UINT32_MAX;
+            this->m_disproof = 0;
+        } else if(this->m_pn_value == pn_value::TRUE){
+            this->m_proof = 0;
+            this->m_disproof = UINT32_MAX;
+        } else if(this->m_pn_value == pn_value::UNKNOWN){
+            this->m_proof = 1;
+            this->m_disproof = 1;
+        } 
+    } 
+
+   if(this->m_proof == 0 || this->m_disproof == 0){
+       if(this->m_created_children){
+           this->m_created_children = false;
+           delete [] this->m_children;
+       }
+    }
+
+    //std::cout << "\t Updated proof: " << this->m_proof << " disproof: " << this->m_disproof << std::endl;
 }
 
 uint32_t sum_proof(pn_node * parent){
@@ -180,49 +228,3 @@ uint32_t min_disproof(pn_node * parent){
 
     return min;
 }
-
-//Unsolved node - has finite prood and disproof numbers not equal to zero
-//Solving a node either solves or doesnt update its parent
-
-
-void pn_node::set_proof_and_disproof_numbers(){
-    if(this->m_children_count > 0){
-        if(this->m_pn_type == pn_type::AND){
-            this->m_proof = sum_proof(this);
-            this->m_disproof = min_disproof(this);
-        } else {
-            this->m_proof = min_proof(this);
-            this->m_disproof = sum_disproof(this);
-        }
-    } else {
-        if(this->m_pn_value == pn_value::FALSE){
-            this->m_proof = UINT32_MAX;
-            this->m_disproof = 0;
-        } else if(this->m_pn_value == pn_value::TRUE){
-            this->m_proof = 0;
-            this->m_disproof = UINT32_MAX;
-        } else if(this->m_pn_value == pn_value::UNKNOWN){
-            this->m_proof = 1;
-            this->m_disproof = 1;
-        } else {
-            assert(false);
-        }
-    } 
-
-    if(this->m_proof == 0 || this->m_disproof == 0){
-        if(this->m_children_count > 0){
-            delete [] this->m_children;
-            this->m_children_count = 0;
-        }
-
-
-        //for(int i = 0; i < this->m_children.size(); i++){
-        //    delete this->m_children[i];
-        //}
-        //this->m_children.clear();
-    }
-
-    //std::cout << "\t Updated proof: " << this->m_proof << " disproof: " << this->m_disproof << std::endl;
-}
-
-

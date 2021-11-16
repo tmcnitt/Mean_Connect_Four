@@ -7,10 +7,20 @@
 #include <iostream>
 
 
-void bit_board::makemove(int player, int col)
+void bit_board::makemove(int col)
 {
-    this->m_boards[player] ^= (uint64_t)1<<(char)this->m_heights[col]++;
+    this->m_boards[this->m_move_num & 1] ^= (uint64_t)1<<(char)this->m_heights[col]++;
+    this->m_moves[this->m_move_num++] = col;
 }
+
+void bit_board::undomove()
+{
+    int move_num = --this->m_move_num;
+    int col = this->m_moves[this->m_move_num];
+
+    this->m_boards[move_num & 1] ^= (uint64_t)1<<(char)(--this->m_heights[col]);
+}
+
 
 void horiz_line(){
   std::cout << "--";
@@ -50,7 +60,7 @@ bool bit_board::isfull()
   return FULL == (FULL & (m_boards[0] | m_boards[1]));
 }
 
-uint64_t bit_board::haswon(int player)
+bool bit_board::haswon(int player)
 {
   uint64_t board = this->m_boards[player];
 
@@ -62,7 +72,7 @@ uint64_t bit_board::haswon(int player)
   return ((diag1 & (diag1 >> 2*HEIGHT)) |
           (hori & (hori >> 2*H1)) |
           (diag2 & (diag2 >> 2*H2)) |
-          (vert & (vert >> 2)));
+          (vert & (vert >> 2))) != 0;
 }
 
 bool bit_board::isplayable(int col)

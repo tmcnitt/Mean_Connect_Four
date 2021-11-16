@@ -17,19 +17,20 @@ void solve(pn_node root) {
     most_proving_node->develop();
 
 
-    if(true){
-    //if (i % 1000000 == 0) {
-      std::cout << "Iteration: " << i << " Root proof: " << root.m_proof << " Root disproof: " << root.m_disproof << " Nodes out there: " << pn_nodes_in_exsistence << std::endl;
-      most_proving_node->m_board.print();
-      std::cout << "Has player 0 won ?: " << most_proving_node->m_board.haswon(0) << " - Player 1?: " << most_proving_node->m_board.haswon(1) << std::endl;
 
-      std::cout << "Board0: " << most_proving_node->m_board.m_boards[0] << std::endl;
-      std::cout << "Board1: " << most_proving_node->m_board.m_boards[1] << std::endl;
+    //if(true){
+    if (i % 1000000 == 0) {
+      std::cout << "Iteration: " << i << " Root proof: " << root.m_proof << " Root disproof: " << root.m_disproof << " Nodes out there: " << pn_nodes_in_exsistence << std::endl;
+      board.print();
+      std::cout << "Has player 0 won ?: " << board.haswon(0) << " - Player 1?: " << board.haswon(1) << std::endl;
+
+      std::cout << "Board0: " << board.m_boards[0] << std::endl;
+      std::cout << "Board1: " << board.m_boards[1] << std::endl;
 
 
       pn_node *check = most_proving_node;
       while (check != nullptr) {
-        std::cout << "Depth: " << check->m_id
+        std::cout << "Depth: " << (int)check->m_id
                   << " Proof: " << check->m_proof
                   << " Disproof: " << check->m_disproof;
 
@@ -47,7 +48,7 @@ void solve(pn_node root) {
           std::cout << " - Proven UNKNOWN";
         }
 
-        std::cout << " - Num children: " << check->m_children_count;
+        std::cout << " - Num children: " << (int)check->m_children_count;
         std::cout << std::endl;
 
         check = check->m_parent;
@@ -59,9 +60,9 @@ void solve(pn_node root) {
 
     i += 1;
 
-    if(most_proving_node->m_id > 1){
-      break;
-    }
+    //if(most_proving_node->m_id > 2){
+    //  break;
+    //}
 
     // if(i % 1 == 0){
     /*  std::cout << "Selected node: " << most_proving_node->m_id << std::endl;
@@ -108,8 +109,24 @@ int main() {
   //pointer_test();
   //return 0;
 
-  bit_board board;
-  //board.makemove(0, 3);
+  
+  //board.makemove(1);
+  //board.makemove(4);
+  //board.makemove(1);
+  //board.makemove(4);
+
+
+  //board.makemove(0);
+  //board.makemove(1);
+  //board.makemove(0);
+  //board.makemove(0);
+  //board.makemove(1);
+  //board.undomove();
+  //board.makemove(1);
+
+  //board.makemove(1, 4);
+
+  //board.print();
   //board.makemove(0, 3);
 
   //board.makemove(0, 0);
@@ -131,8 +148,9 @@ int main() {
 
   root.m_id = 0;
   root.m_parent = nullptr;
-  root.m_board = board;
+  //root.m_board = board;
   root.m_pn_type = pn_type::OR;
 
-  solve(root);
+  solve(root); 
+
 }
