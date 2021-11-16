@@ -10,7 +10,7 @@ enum class pn_type { OR, AND };
 
 class pn_node  {
     public:
-        int m_id;
+        uint32_t m_id;
 
         pn_type m_pn_type;
         pn_value m_pn_value;
@@ -34,9 +34,9 @@ class pn_node  {
         void set_proof_and_disproof_numbers();
         void develop();
 
-        ~pn_node(){
-            for(int i = 0; i < this->m_children.size(); i++){
-                delete this->m_children[i];
-            }
-        }
+        //~pn_node(){
+        //    for(int i = 0; i < this->m_children.size(); i++){
+        //        delete this->m_children[i];
+        //    }
+        //}
 };

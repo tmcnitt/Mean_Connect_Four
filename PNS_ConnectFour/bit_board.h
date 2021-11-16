@@ -8,8 +8,8 @@
 //#define WIDTH 7
 //#define HEIGHT 6
 
-#define WIDTH 4
-#define HEIGHT 5
+#define WIDTH 6
+#define HEIGHT 4
 // bitmask corresponds to board as follows in 7x6 case:
 //  .  .  .  .  .  .  .  TOP
 //  5 12 19 26 33 40 47
@@ -45,6 +45,6 @@ class bit_board {
 
         void print();
         bool isfull();
-        bool haswon(int player);
+        uint64_t haswon(int player);
         bool isplayable(int col);
 };

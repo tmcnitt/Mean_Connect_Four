@@ -160,13 +160,32 @@ void pn_node::set_proof_and_disproof_numbers(){
     //    std::cout << "\t pn_type:  OR"  << std::endl;
     //}
     if(!this->m_children.empty()){
-       if(this->m_pn_type == pn_type::AND){
-           this->m_proof = sum_proof(this);
-           this->m_disproof = min_disproof(this);
-       } else {
-           this->m_proof = min_proof(this);
-           this->m_disproof = sum_disproof(this);
-       }
+        if(this->m_pn_type == pn_type::AND){
+            this->m_proof = sum_proof(this);
+            this->m_disproof = min_disproof(this);
+        } else {
+            this->m_proof = min_proof(this);
+            this->m_disproof = sum_disproof(this);
+        }
+
+        if(this->m_proof == UINT32_MAX && this->m_disproof == 0){
+            this->m_pn_value = pn_value::FALSE;
+
+            for(int i = 0; i < this->m_children.size(); i++){
+                delete this->m_children[i];
+            }
+            this->m_children.clear();
+        }
+
+         if(this->m_proof == 0 && this->m_disproof == UINT32_MAX){
+            this->m_pn_value = pn_value::TRUE;
+
+            for(int i = 0; i < this->m_children.size(); i++){
+                delete this->m_children[i];
+            }
+            this->m_children.clear();
+        }
+
     } else {
         if(this->m_pn_value == pn_value::FALSE){
             this->m_proof = UINT32_MAX;
