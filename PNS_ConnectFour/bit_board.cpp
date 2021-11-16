@@ -28,7 +28,7 @@ void bit_board::print()
  for(int row = HEIGHT-1; row >= 0; row--){
     std::cout << "| ";
     for(int col = 0; col < WIDTH; col++){
-      uint64_t bit = ((uint64_t)1 << (char)(H1 * col)) + row;
+      uint64_t bit = ((uint64_t)1 << ((char)(H1 * col)+ row));
 
       if((m_boards[0] & bit) != 0){
         std::cout << "r ";

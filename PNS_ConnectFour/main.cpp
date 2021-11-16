@@ -93,20 +93,6 @@ void solve(pn_node root) {
 
 int main() {
   bit_board board;
-  //board.m_boards[0] = 234948608;
-  //board.m_boards[1] = 34016;
-  board.makemove(0, 5);
-  board.makemove(0, 5);
-  board.makemove(0, 5);
-  board.makemove(0, 5);
-
-  std::cout << board.m_boards[0] << std::endl;
-
-  board.print();
-
-  std::cout << board.haswon(0) << std::endl;
-  std::cout << board.haswon(1) << std::endl;
-  
   //board.makemove(0, 3);
   //board.makemove(0, 3);
 
@@ -130,7 +116,7 @@ int main() {
   root.m_id = 0;
   root.m_parent = nullptr;
   root.m_board = board;
-  root.m_pn_type = pn_type::OR;
+  root.m_pn_type = pn_type::AND;
 
-  //solve(root);
+  solve(root);
 }
