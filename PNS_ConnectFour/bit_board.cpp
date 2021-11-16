@@ -22,16 +22,50 @@
 #include "bit_board.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 
 
 void bit_board::makemove(int player, int col)
 {
-    this->m_boards[player] ^= (uint64_t)1<<this->m_heights[col]++;
+    this->m_boards[player] ^= (uint64_t)1<<(char)this->m_heights[col]++;
 }
+
+void horiz_line(){
+  std::cout << "--";
+  for(int i = 0; i < WIDTH; i++){
+    std::cout << "--";
+  }
+  std::cout << "-";
+  std::cout << std::endl; 
+}
+
+void bit_board::print()
+{
+  horiz_line();
+
+ for(int row = HEIGHT-1; row >= 0; row--){
+    std::cout << "| ";
+    for(int col = 0; col < WIDTH; col++){
+      uint64_t bit = (uint64_t)1 << (char)(H1 * col) + row;
+
+      if((m_boards[0] & bit) != 0){
+        std::cout << "r ";
+      } else if ((m_boards[1] & bit) != 0){
+        std::cout << "y ";
+      } else {
+        std::cout << "  ";
+      }
+    }
+    std::cout << "|";
+    std::cout << std::endl;
+  }
+  horiz_line();
+}
+
 
 bool bit_board::isfull()
 {
-  return (FULL & (m_boards[0] | m_boards[1])) != 0;
+  return FULL == (FULL & (m_boards[0] | m_boards[1]));
 }
 
 bool bit_board::haswon(int player)

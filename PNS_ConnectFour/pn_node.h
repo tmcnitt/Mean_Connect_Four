@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "bit_board.h"
+#include <memory>
 
 enum class pn_value { TRUE , FALSE, UNKNOWN };
 
@@ -17,14 +18,11 @@ class pn_node  {
         uint32_t m_proof;
         uint32_t m_disproof;
 
-        bool m_evaluated = false;
-        bool m_expanded = false;
-
         bit_board m_board;
 
         pn_node * m_parent;
         
-        std::vector<pn_node *> m_children;
+        std::vector<pn_node*> m_children;
 
         pn_node * select_most_proving();
 
@@ -35,4 +33,10 @@ class pn_node  {
         
         void set_proof_and_disproof_numbers();
         void develop();
+
+        ~pn_node(){
+            for(int i = 0; i < this->m_children.size(); i++){
+                delete this->m_children[i];
+            }
+        }
 };
