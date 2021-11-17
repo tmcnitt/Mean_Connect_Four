@@ -43,8 +43,8 @@ pn_node * pn_node::select_most_proving() {
     }
 
     assert(node->m_children_count == 0);
-    assert(node->m_proof == 1);
-    assert(node->m_disproof == 1);
+    //assert(node->m_proof == 1);
+    //assert(node->m_disproof == 1);
 
 
     return node;
@@ -60,6 +60,8 @@ void pn_node::evaluate(){
         //std::cout << "Found a way player 1 wins" << std::endl;
         this->m_pn_value = pn_value::FALSE;
     } else if(board.isfull()) {
+        this->m_pn_value = pn_value::FALSE;
+    } else if(board.m_move_num >= 21){
         this->m_pn_value = pn_value::FALSE;
     }
 }
@@ -89,8 +91,6 @@ void pn_node::generate_all_children(){
             child.m_move = col;
             child.m_pn_type = type;
             child.m_pn_value = pn_value::UNKNOWN;
-            child.m_proof = 1;
-            child.m_disproof = 1;
 
 
             this->m_children[this->m_children_count] = child;
@@ -128,9 +128,15 @@ void pn_node::develop()
     this->generate_all_children();
 
     for(int i = 0; i < this->m_children_count; i++){
-        pn_node & child = this->m_children[i];
-        child.evaluate();
-        child.set_proof_and_disproof_numbers();
+        pn_node * child = &this->m_children[i];
+        child->evaluate();
+        child->set_proof_and_disproof_numbers();
+
+        //if(child->m_pn_type == pn_type::OR && child->m_proof == 0){
+        //    break;
+        //} else if(child->m_pn_type == pn_type::AND && child->m_disproof == 0){
+        //    break;
+        //}
 
         //if(this->m_children[i].pn_type == pn_type::AND){
 

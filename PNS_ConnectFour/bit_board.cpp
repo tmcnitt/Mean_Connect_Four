@@ -5,6 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <cassert>
+
+
+void bit_board::makemove(int col, int player)
+{
+    this->m_boards[player] ^= (uint64_t)1<<(char)this->m_heights[col]++;
+}
 
 
 void bit_board::makemove(int col)
@@ -15,7 +22,9 @@ void bit_board::makemove(int col)
 
 void bit_board::undomove()
 {
+    assert(this->m_move_num > 0);
     int move_num = --this->m_move_num;
+
     int col = this->m_moves[this->m_move_num];
 
     this->m_boards[move_num & 1] ^= (uint64_t)1<<(char)(--this->m_heights[col]);

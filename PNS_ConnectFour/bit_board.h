@@ -40,9 +40,11 @@ class bit_board {
         char m_heights[WIDTH];
         char m_moves[HEIGHT*WIDTH];
 
-        char m_move_num = 0;
+        uint32_t m_move_num = 0;
 
         uint64_t m_boards[2] = {0,0};
+
+        void makemove(int col, int player);
 
         void makemove(int col);
         void undomove();
