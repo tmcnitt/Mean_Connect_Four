@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include <cassert>
+#include "settings.h"
 
 bit_board board;
 int pn_nodes_in_exsistence = 0;
@@ -61,7 +62,8 @@ void pn_node::evaluate(){
         this->m_pn_value = pn_value::FALSE;
     } else if(board.isfull()) {
         this->m_pn_value = pn_value::FALSE;
-    } else if(board.m_move_num >= 21){
+    //}
+    } else if(DEPTH_LIMIT > -1 && board.m_move_num == DEPTH_LIMIT){
         this->m_pn_value = pn_value::FALSE;
     }
 }

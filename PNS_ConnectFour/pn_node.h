@@ -13,7 +13,10 @@ enum class pn_type { OR, AND };
 
 class pn_node  {
     public:
+        pn_node * m_parent;
+
         pn_node * m_children;
+        uint8_t m_children_count = 0;
 
         pn_type m_pn_type;
         pn_value m_pn_value;
@@ -28,9 +31,6 @@ class pn_node  {
 
         uint8_t m_move;
 
-        pn_node * m_parent;
-
-        uint8_t m_children_count = 0;
 
         pn_node();
         ~pn_node();

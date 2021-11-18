@@ -11,7 +11,7 @@ int solve(pn_node root) {
 
   pn_node * current = &root;
   while (root.m_proof != 0 && root.m_disproof != 0) {
-    std::cout << "Iteration: " << i << " Root proof: " << root.m_proof << " Root disproof: " << root.m_disproof  << "Board ply:" << board.m_move_num << std::endl;
+    //std::cout << "Iteration: " << i << " Root proof: " << root.m_proof << " Root disproof: " << root.m_disproof  << "Board ply:" << board.m_move_num << std::endl;
 
     pn_node * most_proving_node = current->select_most_proving();
 
@@ -20,7 +20,7 @@ int solve(pn_node root) {
     most_proving_node->develop();
 
     //if(true){
-    /*if (i % 1000000 == 0) {
+    if (i % 1000000 == 0) {
       std::cout << "Iteration: " << i << " Root proof: " << root.m_proof << " Root disproof: " << root.m_disproof  << std::endl;
 
       board.print();
@@ -55,7 +55,7 @@ int solve(pn_node root) {
 
         check = check->m_parent;
       } 
-    }   */
+    }  
  
     current = most_proving_node->update_ancestors(&root);
 
@@ -93,15 +93,15 @@ int solve(pn_node root) {
   }
 
   if (root.m_proof == 0) {
-    //std::cout << "Root proved true" << std::endl;
+    std::cout << "Root proved true" << std::endl;
     root.m_pn_value = pn_value::TRUE;
     return 1;
   } else if (root.m_disproof == 0) {
-    //std::cout << "Root proved false" << std::endl;
+    std::cout << "Root proved false" << std::endl;
     root.m_pn_value = pn_value::FALSE;
     return -1;
   } else {
-    //std::cout << "Root proved unknown" << std::endl;
+    std::cout << "Root proved unknown" << std::endl;
     root.m_pn_value = pn_value::UNKNOWN;
     return 0;
   }
@@ -113,6 +113,7 @@ int solve(pn_node root) {
 #include <fstream>
 #include <sstream>
 #include <cassert>
+
 /*
 int main(){
   std::ifstream infile( "connect-4.data" );
@@ -174,17 +175,12 @@ int main(){
 
     int result = solve(root); 
 
-    if(result != 0){
-      if(result != outcome){
-        std::cout << "Error" << std::endl;
-      } else {
-        std::cout << "Correct!" << std::endl;
-      }
-    }
+    std::cout << "Wanted to get: " << outcome << std::endl;
+    std::cout << "Got: " << result << std::endl;
   }
-}
-*/
+} */
 
+/*
 int main(){
   std::ifstream infile( "connect-4.data" );
 
@@ -245,6 +241,7 @@ int main(){
   
   
 }
+*/
 
 /*
 b,b,b
@@ -255,8 +252,6 @@ b,b,o,o,x,o,x,o,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,
 b,b,x,x
 win
 */
-
-/*
 int main() {
   //pointer_test();
   //return 0;
@@ -267,8 +262,8 @@ int main() {
   //board.makemove(1);
   //board.makemove(4);
 
-  board.m_boards[0] = 44056576;
-  board.m_boards[1] = 356515840;
+  //board.m_boards[0] = 44056576;
+  //board.m_boards[1] = 356515840;
   //board.makemove(3);
   //board.makemove(1);
   //board.makemove(0);
@@ -305,5 +300,4 @@ int main() {
 
   solve(root); 
 
-}
-*/
+} 
