@@ -81,12 +81,11 @@ void pn_node::generate_all_children(){
 
     assert(this->m_pn_value == pn_value::UNKNOWN);
 
-    this->m_children = new pn_node[WIDTH];
+    this->m_children = new pn_node[WIDTH+49];
     this->m_created_children = true;
 
-    for(int col = 0; col < WIDTH; col++){
+    for(int col = 1; col < WIDTH+1; col++){
         if(board.isplayable(col)){
-
             pn_node child = pn_node();
             child.m_id = this->m_id + 1;
             child.m_parent = this;
@@ -99,6 +98,31 @@ void pn_node::generate_all_children(){
             this->m_children_count += 1;
         }
     }
+    
+    if(type == pn_type::OR){
+        return;
+    }
+
+    for(int from = 1; from < WIDTH+1; from++){
+        for(int end = 1; end < WIDTH+1; end++){
+            if(from == end){
+                continue;
+            }
+
+            int move = (from * 10) + end;
+            if(board.isplayable(move)){
+                pn_node child = pn_node();
+                child.m_id = this->m_id + 1;
+                child.m_parent = this;
+                child.m_move = move;
+                child.m_pn_type = type;
+                child.m_pn_value = pn_value::UNKNOWN;
+
+                this->m_children[this->m_children_count] = child;
+                this->m_children_count += 1;
+            }
+        }
+    } 
 
 }
 

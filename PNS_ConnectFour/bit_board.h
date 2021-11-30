@@ -30,6 +30,19 @@
 #define FULL (BOTTOM << (HEIGHT-1))
 
 class bit_board {
+    private:
+        void shift_pieces_down(int, int);
+        void shift_pieces_up(int, int);
+
+        void mean_move(int, int);
+        void normal_move(int, int);
+        void undo_mean_move(int, int);
+
+        bool isplayable_normal(int);
+        bool isplayable_mean(int, int);
+
+        bool check_gravity_col(int);
+
     public:
         bit_board(){
             for(int i = 0; i < WIDTH; i++){
@@ -37,16 +50,19 @@ class bit_board {
             }
         }
 
+        bool check_gravity();
+
         char m_heights[WIDTH];
         char m_moves[HEIGHT*WIDTH];
 
+        uint32_t m_pieces_on_board = 0;
         uint32_t m_move_num = 0;
 
         uint64_t m_boards[2] = {0,0};
 
-        void makemove(int col, int player);
+        void makemove_setup_only_dont_use(int col, int player);
 
-        void makemove(int col);
+        void makemove(int move);
         void undomove();
 
         void print();

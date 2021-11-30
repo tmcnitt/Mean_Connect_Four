@@ -1,7 +1,8 @@
 #include "bit_board.h"
 #include "pn_node.h"
 #include <iostream>
-
+#include "settings.h"
+#include <bitset>
 
 int solve(pn_node root) {
   root.evaluate();
@@ -19,16 +20,26 @@ int solve(pn_node root) {
 
     most_proving_node->develop();
 
+
     //if(true){
     if (i % 1000000 == 0) {
       std::cout << "Iteration: " << i << " Root proof: " << root.m_proof << " Root disproof: " << root.m_disproof  << std::endl;
 
+      board.check_gravity();
       board.print();
       std::cout << "Has player 0 won ?: " << board.haswon(0) << " - Player 1?: " << board.haswon(1) << std::endl;
 
-      std::cout << "Board0: " << board.m_boards[0] << std::endl;
-      std::cout << "Board1: " << board.m_boards[1] << std::endl;
+      pn_node * check_history = most_proving_node->m_parent;
+      while(check_history != nullptr){
+        std::cout << "ID: " << (int)check_history->m_id << " Move for this node: " << (int)check_history->m_move << std::endl;
+        check_history = check_history->m_parent;
+      }
+      
 
+      if(!board.check_gravity()){
+        std::cout << "Gravity validation in solve" << std::endl;
+        assert(false);
+      };
 
       pn_node *check = most_proving_node;
       while (check != nullptr) {
@@ -252,7 +263,26 @@ b,b,o,o,x,o,x,o,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,
 b,b,x,x
 win
 */
+
+int test();
+int test_bug();
+int test_gravity();
+int test_gravity_2();
+int test_bug_floating();
+int test_gravity_low();
+
+
 int main() {
+  return test();
+  //return test_gravity_2();
+  //return test_gravity_2();
+  //return test_bug_floating();
+
+  //return test_gravity_2();
+  //return test_gravity();
+  //return test();
+  //return test_bug();
+  //std::cout << DEPTH_LIMIT << std::endl;
   //pointer_test();
   //return 0;
 
@@ -266,7 +296,7 @@ int main() {
   //board.m_boards[1] = 356515840;
   //board.makemove(3);
   //board.makemove(1);
-  //board.makemove(0);
+  //board.makemove(4);
   //board.makemove(0);
   //board.makemove(1);
   //board.undomove();
@@ -296,8 +326,157 @@ int main() {
   root.m_id = 0;
   root.m_parent = nullptr;
   //root.m_board = board;
+  root.m_move = 255;
   root.m_pn_type = pn_type::OR;
 
   solve(root); 
 
 } 
+
+int test_gravity_low(){
+  board.makemove(1);
+  board.m_heights[0] = 0;
+  std::cout << (int)board.m_heights[0] << std::endl;
+  board.check_gravity();
+}
+
+int test_bug_floating(){
+  /*board.makemove(5);
+  board.print();
+
+  std::bitset<64> y(board.m_boards[0]);
+  std::cout << y << std::endl;
+
+  //board.undomove(); */
+
+  //assert(board.m_boards[0] == 2216471560192);
+  board.m_boards[0] = 2216471560192;
+  
+  assert(!board.check_gravity());
+  //std::bitset<64> x(board.m_boards[0]);
+  //std::cout << x << std::endl;
+
+
+  //board.makemove(5);
+  //board.makemove(51);
+  //board.m_heights[0] = 1;
+  //board.print();
+  //board.makemove(51);
+}
+
+int test_gravity_2(){
+  board.m_boards[0] = (uint64_t)34359738368;
+  board.m_boards[1] = 0;
+
+  board.m_heights[0] = (char)0;
+  board.m_heights[1] = (char)7;
+  board.m_heights[2] = (char)14;
+  board.m_heights[3] = (char)21;
+  board.m_heights[4] = (char)28;
+  board.m_heights[5] = (char)36;
+  board.m_heights[6] = (char)42;
+  board.m_pieces_on_board = 1;
+  board.m_move_num = 1;
+  board.print();
+  assert(board.check_gravity());
+  assert(board.isplayable(61));
+
+
+  board.makemove(61);
+  board.print();
+
+  assert(board.check_gravity());
+
+  return 0 ;
+
+
+//Board0: 5497602179072
+//Board1: 1108122533888
+//Heights: 0,7,14,26,28,35,43,
+}
+
+int test_gravity(){
+  board.m_boards[0] = 5497602179072;
+  board.m_boards[1] = 1108122533888;
+  board.m_heights[0] = 0;
+  board.m_heights[1] = 7;
+  board.m_heights[2] = 14;
+  board.m_heights[3] = 26;
+  board.m_heights[4] = 28;
+  board.m_heights[5] = 35;
+  board.m_heights[6] = 43;
+
+  board.print();
+
+  board.check_gravity();
+
+  return 0 ;
+
+
+//Board0: 5497602179072
+//Board1: 1108122533888
+//Heights: 0,7,14,26,28,35,43,
+}
+
+int test_bug(){
+  board.makemove_setup_only_dont_use(0, 0);
+  board.makemove_setup_only_dont_use(0, 0);
+  board.makemove_setup_only_dont_use(0, 1);
+  board.makemove_setup_only_dont_use(0, 0);
+  board.print();
+  assert(!board.isplayable(61));
+}
+
+int test(){
+  board.makemove(1);
+  board.makemove(1);
+  board.makemove(1);
+  board.makemove(2);
+  board.makemove(2);
+  board.makemove(2);
+  board.makemove(3);
+  board.makemove(4);
+  board.makemove(5);
+  board.makemove(6);
+
+  std::cout << "Before mean move" << std::endl;
+  board.print();
+
+  assert(!board.isplayable(76));
+  assert(!board.isplayable(54));
+  assert(board.isplayable(21));
+
+  board.makemove(21);
+
+  std::cout << "After mean move" << std::endl;
+  board.print();
+
+  board.undomove();
+
+  std::cout << "After undo" << std::endl;
+  board.print();
+
+  board.makemove(1);
+  board.makemove(2);
+
+  std::cout << "Place ontop off" << std::endl;
+  board.print();
+
+  board.undomove();
+  board.undomove();
+
+  std::cout << "After undo" << std::endl;
+  board.print();
+
+  board.makemove(1);
+  board.makemove(1);
+  board.makemove(1);
+
+  std::cout << "Filled col one" << std::endl;
+  board.print();
+
+  assert(!board.isplayable(1));
+  assert(!board.isplayable(21));
+  assert(!board.isplayable(31));
+
+}
