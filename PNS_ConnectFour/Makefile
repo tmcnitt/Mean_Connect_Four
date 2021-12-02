@@ -20,6 +20,9 @@ run: $(TARGET)
 
 depend: .depend
 
+move: clean
+	scp -r ../PNS_ConnectFour tmcnitt@genuse61.smu.edu:.
+
 .depend: $(SRCS)
 	rm -f "$@"
 	$(CC) $(CFLAGS) -MM $^ -MF "$@"

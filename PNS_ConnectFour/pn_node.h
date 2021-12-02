@@ -5,7 +5,10 @@
 #include <memory>
 #include <iostream>
 
-extern int pn_nodes_in_exsistence;
+extern uint64_t pn_nodes_in_exsistence;
+extern uint64_t games_won;
+extern uint64_t games_lost;
+
 extern bit_board board;
 
 enum class pn_value { TRUE, FALSE, UNKNOWN };
@@ -26,8 +29,8 @@ class pn_node  {
         bool m_created_children = false;
         bool m_expanded = false;
 
-        uint32_t m_proof;
-        uint32_t m_disproof;
+        uint64_t m_proof;
+        uint64_t m_disproof;
 
         uint8_t m_move;
 
@@ -49,7 +52,7 @@ class pn_node  {
 };
 
 
-uint32_t sum_proof(pn_node * parent);
-uint32_t sum_disproof(pn_node * parent);
-uint32_t min_proof(pn_node * parent);
-uint32_t min_disproof(pn_node * parent);
+uint64_t sum_proof(pn_node * parent);
+uint64_t sum_disproof(pn_node * parent);
+uint64_t min_proof(pn_node * parent);
+uint64_t min_disproof(pn_node * parent);

@@ -57,6 +57,7 @@ class bit_board {
 
         uint32_t m_pieces_on_board = 0;
         uint32_t m_move_num = 0;
+        uint32_t m_pop_count = 0;
 
         uint64_t m_boards[2] = {0,0};
 
@@ -69,4 +70,6 @@ class bit_board {
         bool isfull();
         bool haswon(int player);
         bool isplayable(int col);
+
+        int popcount();
 };
