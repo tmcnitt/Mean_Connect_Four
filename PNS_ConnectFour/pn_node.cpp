@@ -82,7 +82,7 @@ void pn_node::evaluate(){
     } else if(this->m_id >= 100){
         this->m_pn_value = pn_value::TRUE;
     } else if(DEPTH_LIMIT > -1 && this->m_id > DEPTH_LIMIT){
-        this->m_pn_value = pn_value::TRUE;
+        this->m_pn_value = pn_value::FALSE;
     } 
 }
 
@@ -103,13 +103,7 @@ void pn_node::generate_all_children(){
 
     assert(this->m_pn_value == pn_value::UNKNOWN);
 
-    int valid_moves = 0;
-    for(int col = 1; col < WIDTH+1; col++) {
-        if (board.isplayable(col)) {
-            valid_moves++;
-        }
-    }
-
+    bool can_use_normal_moves = true;
     bool can_use_mean_moves = false;
 
     if(ENABLE_MEAN){
@@ -125,7 +119,7 @@ void pn_node::generate_all_children(){
             //Except if these limits are on
 
             if(PLAYER_ONE_MEAN_COUNT_LIMIT != -1){
-                can_use_mean_moves &= board.popcount() <= PLAYER_ONE_MEAN_COUNT_LIMIT;
+                can_use_mean_moves &= board.m_pop_counts[0] <= PLAYER_ONE_MEAN_COUNT_LIMIT;
             } 
 
              if(PLAYER_ONE_MEAN_DEPTH_LOWER_LIMIT != -1){
@@ -135,11 +129,29 @@ void pn_node::generate_all_children(){
             if(PLAYER_ONE_MEAN_DEPTH_UPPER_LIMIT != -1){
                 can_use_mean_moves &= this->m_id < PLAYER_ONE_MEAN_DEPTH_UPPER_LIMIT;
             }
+
+            if(PLAYER_ONE_POP_MIRROR){
+                can_use_mean_moves |= board.m_pop_counts[0] < board.m_pop_counts[1];
+            }
+
+            can_use_mean_moves |= PLAYER_ONE_MEAN_IMMEDIATE;
+
+            if(can_use_mean_moves){
+                can_use_normal_moves = false;
+            }
+        }
+    }
+
+    int valid_moves = 0;
+
+    if(can_use_normal_moves){
+        for(int col = 1; col < WIDTH+1; col++) {
+            if (board.isplayable(col)) {
+                valid_moves++;
+            }
         }
     }
     
-    
-
     if(can_use_mean_moves){
         for(int from = 1; from < WIDTH+1; from++) {
             for (int end = 1; end < WIDTH + 1; end++) {
@@ -158,18 +170,27 @@ void pn_node::generate_all_children(){
     this->m_children = new pn_node[valid_moves];
     this->m_created_children = true;
 
-    for(int col = 1; col < WIDTH+1; col++){
-        if(board.isplayable(col)){
-            pn_node child = pn_node();
-            child.m_id = this->m_id + 1;
-            child.m_parent = this;
-            child.m_move = col;
-            child.m_pn_type = type;
-            child.m_pn_value = pn_value::UNKNOWN;
+    if(can_use_normal_moves){
+
+        for(int col = 1; col < WIDTH+1; col++){
+            bool will_gen_move = board.isplayable(col);
+
+            if(this->m_id == 0){
+                will_gen_move &= col == 4;
+            }
+
+            if(will_gen_move){
+                pn_node child = pn_node();
+                child.m_id = this->m_id + 1;
+                child.m_parent = this;
+                child.m_move = col;
+                child.m_pn_type = type;
+                child.m_pn_value = pn_value::UNKNOWN;
 
 
-            this->m_children[this->m_children_count] = child;
-            this->m_children_count += 1;
+                this->m_children[this->m_children_count] = child;
+                this->m_children_count += 1;
+            }
         }
     }
     
@@ -181,7 +202,16 @@ void pn_node::generate_all_children(){
                 }
 
                 int move = (from * 10) + end;
-                if (board.isplayable(move)) {
+
+                bool will_use_move = board.isplayable(move);
+                if(will_use_move && type == pn_type::AND && PLAYER_ONE_MEAN_IMMEDIATE){
+                    board.makemove(move);
+                    will_use_move &= board.haswon(0);
+
+                    board.undomove();
+                }
+
+                if (will_use_move) {
                     pn_node child = pn_node();
                     child.m_id = this->m_id + 1;
                     child.m_parent = this;

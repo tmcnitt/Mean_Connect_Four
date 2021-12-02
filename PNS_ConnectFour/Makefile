@@ -1,5 +1,5 @@
 CC := g++
-CFLAGS :=  -g --std=c++11 -O3 
+CFLAGS :=  -g --std=c++11 -O3 -DNDEBUG
 TARGET := solver
 
 # $(wildcard *.cpp /xxx/xxx/*.cpp): get all .cpp files from the current directory and dir "/xxx/xxx/"

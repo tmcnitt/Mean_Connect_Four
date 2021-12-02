@@ -79,10 +79,6 @@ void bit_board::normal_move(int col, int board)
   this->m_boards[board] ^= (uint64_t)1<<(char)this->m_heights[col]++;
 }
 
-int bit_board::popcount()
-{
-  return this->m_pop_count;
-}
 
 void bit_board::makemove(int move){
   //assert(this->isplayable(move));
@@ -102,9 +98,7 @@ void bit_board::makemove(int move){
 
     this->mean_move(from, end);
 
-    if((this->m_move_num & 1) == 0){
-      this->m_pop_count++;
-    }
+    this->m_pop_counts[this->m_move_num & 1]++;
   }
 
   this->m_moves[this->m_move_num++] = move;
@@ -144,11 +138,7 @@ void bit_board::undomove()
     int end = (move % 10) - 1;
 
     this->undo_mean_move(from, end);
-
-    if((this->m_move_num & 1) == 0){
-      assert(this->m_pop_count > 0);
-      this->m_pop_count--;
-    }
+    this->m_pop_counts[this->m_move_num & 1]--;
   }
 }
 
@@ -198,7 +188,7 @@ void bit_board::print()
   std::cout << "Board0: " << this->m_boards[0] << std::endl;
   std::cout << "Board1: " << this->m_boards[1] << std::endl;
   std::cout << "Pieces on board: " << this->m_pieces_on_board << std::endl;
-  std::cout << "Pop moves used: " << this->m_pop_count << std::endl;
+  std::cout << "Pop moves used: Player 0: " << this->m_pop_counts[0] <<  " Player 1: " << this->m_pop_counts[1] << std::endl;
 
   std::cout << "Heights: ";
   for(int i = 0; i < WIDTH; i++){

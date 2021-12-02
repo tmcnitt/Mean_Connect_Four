@@ -36,6 +36,11 @@ int solve(pn_node root) {
     //if(false){
       std::cout << "Iteration: " << i << " Root proof: " << root.m_proof << " Root disproof: " << root.m_disproof  << std::endl;
       std::cout << "Nodes in exsistence: " << pn_nodes_in_exsistence << " Games won: " << games_won << " Games lost: " << games_lost << std::endl;
+      std::cout << "Root children proofs: ";
+      for(int i = 0; i < root.m_children_count; i++){
+        std::cout << "(" << root.m_children[i].m_proof << "," << root.m_children[i].m_disproof << "), ";
+      }
+      std::cout << std::endl;
 
       board.print();
       std::cout << "Has player 0 won ?: " << board.haswon(0) << " - Player 1?: " << board.haswon(1) << std::endl;
@@ -217,32 +222,7 @@ win
 */
 
 
-int test_popout_count()
-{
-  assert(board.popcount() == 0);
-  board.makemove(1);
-  assert(board.popcount() == 0);
-  board.makemove(2);
-  assert(board.popcount() == 0);
-  board.makemove(21);
-  assert(board.popcount() == 1);
-  board.makemove(3);
-  board.undomove();
-  assert(board.popcount() == 1);
-  board.undomove();
-  assert(board.popcount() == 0);
-  board.print();
-  board.makemove(21);
-  board.makemove(3);
-  board.makemove(3);
-  board.print();
-  board.makemove(12);
-  assert(board.popcount() == 1);
-  board.print();
-  board.undomove();
-  assert(board.popcount() == 1);
-  return 0;
-}
+
 
 int main() {
   pn_node root;
